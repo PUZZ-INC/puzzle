@@ -1,0 +1,13 @@
+{
+  "files": {
+    "main.css": "/Sliding-Puzzle/static/css/main.4b8ef21e.css",
+    "main.js": "/Sliding-Puzzle/static/js/main.af4b5153.js",
+    "index.html": "/Sliding-Puzzle/index.html",
+    "main.4b8ef21e.css.map": "/Sliding-Puzzle/static/css/main.4b8ef21e.css.map",
+    "main.af4b5153.js.map": "/Sliding-Puzzle/static/js/main.af4b5153.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.4b8ef21e.css",
+    "static/js/main.af4b5153.js"
+  ]
+}
