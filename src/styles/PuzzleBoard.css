@@ -1,0 +1,235 @@
+.puzzle-board-container {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 20px 0;
+}
+
+.puzzle-board {
+  display: grid;
+  gap: 3px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 15px;
+  padding: 6px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  max-width: 500px;
+  width: 100%;
+  aspect-ratio: 1;
+}
+
+.puzzle-tile {
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: white;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.puzzle-tile:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+.puzzle-tile.movable {
+  background: linear-gradient(135deg, #2196F3, #1976D2);
+  animation: pulse 2s infinite;
+}
+
+.puzzle-tile.movable:hover {
+  background: linear-gradient(135deg, #1976D2, #2196F3);
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 8px 16px rgba(33, 150, 243, 0.4);
+}
+
+.puzzle-tile.completed {
+  background: linear-gradient(135deg, #4CAF50, #45a049);
+  animation: celebrate 0.5s ease-out;
+}
+
+.puzzle-tile.empty-tile {
+  background: transparent;
+  border: 2px dashed rgba(255, 255, 255, 0.5);
+  cursor: default;
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.puzzle-tile.empty-tile::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: inherit;
+  filter: blur(10px);
+  opacity: 0.7;
+  z-index: -1;
+}
+
+.empty-tile-indicator {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.empty-icon {
+  font-size: 2rem;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+}
+
+.puzzle-tile.empty-tile:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.tile-number {
+  font-size: 2rem;
+  font-weight: bold;
+  color: white;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+  z-index: 1;
+}
+
+/* Анимации */
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+  50% {
+    box-shadow: 0 4px 8px rgba(33, 150, 243, 0.4);
+  }
+}
+
+@keyframes celebrate {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Оверлей завершения */
+.completion-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(76, 175, 80, 0.9);
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.5s ease-out;
+}
+
+.completion-content {
+  text-align: center;
+  color: white;
+}
+
+.completion-icon {
+  font-size: 3rem;
+  display: block;
+  margin-bottom: 10px;
+  animation: bounce 1s infinite;
+}
+
+.completion-content p {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin: 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-10px);
+  }
+  60% {
+    transform: translateY(-5px);
+  }
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .puzzle-board {
+    gap: 3px;
+    padding: 6px;
+    max-width: 400px;
+  }
+  
+  .puzzle-tile {
+    border-radius: 6px;
+    font-size: 1.2rem;
+  }
+  
+  .tile-number {
+    font-size: 1.5rem;
+  }
+  
+  .completion-icon {
+    font-size: 2.5rem;
+  }
+  
+  .completion-content p {
+    font-size: 1rem;
+  }
+  
+  .empty-icon {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .puzzle-board {
+    gap: 2px;
+    padding: 4px;
+    max-width: 300px;
+  }
+  
+  .puzzle-tile {
+    border-radius: 4px;
+    font-size: 1rem;
+  }
+  
+  .tile-number {
+    font-size: 1.2rem;
+  }
+  
+  .completion-icon {
+    font-size: 2rem;
+  }
+  
+  .completion-content p {
+    font-size: 0.9rem;
+  }
+  
+  .empty-icon {
+    font-size: 1.2rem;
+  }
+} 
