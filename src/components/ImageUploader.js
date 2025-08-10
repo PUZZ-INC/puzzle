@@ -62,8 +62,8 @@ const ImageUploader = ({ onImageUpload, language = 'ru' }) => {
   // Добавляем отладочную информацию
   console.log('ImageUploader render:', { selectedImage, previewUrl, isLoading, error, language });
 
-  // Отдельная функция для загрузки сохраненного изображения (без useCallback)
-  const loadSavedImage = () => {
+  // Отдельная функция для загрузки сохраненного изображения (с useCallback)
+  const loadSavedImage = React.useCallback(() => {
     console.log('=== loadSavedImage START ===');
     console.log('loadSavedImage called, autoLoadImage:', autoLoadImageRef.current);
     console.log('Current state - selectedImage:', !!selectedImage, 'previewUrl:', !!previewUrl);
@@ -118,7 +118,7 @@ const ImageUploader = ({ onImageUpload, language = 'ru' }) => {
       console.log('No saved image found in storage');
       console.log('=== loadSavedImage END (no saved image) ===');
     }
-  };
+  }, [selectedImage, previewUrl, onImageUpload]);
 
   // Загружаем сохраненное изображение при инициализации
   React.useEffect(() => {
@@ -153,7 +153,7 @@ const ImageUploader = ({ onImageUpload, language = 'ru' }) => {
         loadSavedImage();
       }, 100);
     }
-  }, []); // Пустой массив зависимостей - loadSavedImage использует ref
+  }, [loadSavedImage]); // Добавляем loadSavedImage в зависимости
 
 
 
@@ -169,7 +169,7 @@ const ImageUploader = ({ onImageUpload, language = 'ru' }) => {
         loadSavedImage();
       }, 100);
     }
-  }, [autoLoadImage, selectedImage, previewUrl]); // loadSavedImage использует ref, не нужна в зависимостях
+  }, [autoLoadImage, selectedImage, previewUrl, loadSavedImage]); // Добавляем loadSavedImage в зависимости
 
   const handleFileSelect = async (event) => {
     console.log('handleFileSelect called with:', event.target.files);
