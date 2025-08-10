@@ -153,12 +153,9 @@ const ImageUploader = ({ onImageUpload, language = 'ru' }) => {
         loadSavedImage();
       }, 100);
     }
-  }, []); // Убираем зависимости, чтобы useEffect сработал только один раз
+  }, []); // Пустой массив зависимостей - loadSavedImage использует ref
 
-  // Отдельная функция для загрузки сохраненного изображения (с useCallback для других мест)
-  const loadSavedImageCallback = React.useCallback(() => {
-    loadSavedImage();
-  }, []); // Убираем зависимости, так как используем ref
+
 
   // useEffect для отслеживания изменений autoLoadImage
   React.useEffect(() => {
@@ -172,7 +169,7 @@ const ImageUploader = ({ onImageUpload, language = 'ru' }) => {
         loadSavedImage();
       }, 100);
     }
-  }, [autoLoadImage, selectedImage, previewUrl]); // Убираем loadSavedImage из зависимостей
+  }, [autoLoadImage, selectedImage, previewUrl]); // loadSavedImage использует ref, не нужна в зависимостях
 
   const handleFileSelect = async (event) => {
     console.log('handleFileSelect called with:', event.target.files);
