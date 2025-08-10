@@ -44,15 +44,15 @@ function App() {
     <div className="App" dir={language === 'ar' ? 'rtl' : 'ltr'}>
       <Header 
         language={language}
-        onLanguageChange={handleLanguageChange}
-        theme={theme}
-        onThemeChange={handleThemeChange}
       />
       <main className="main-content">
         <Game 
           gameState={gameState} 
           setGameState={setGameState}
           language={language}
+          theme={theme}
+          onThemeChange={handleThemeChange}
+          onLanguageChange={handleLanguageChange}
         />
       </main>
     </div>

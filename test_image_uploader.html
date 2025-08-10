@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест ImageUploader</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: white;
+            padding: 20px;
+        }
+        .test-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #2a2a2a;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .upload-area {
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 15px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.02);
+            margin-bottom: 20px;
+        }
+        .upload-area:hover {
+            border-color: #4CAF50;
+            background: rgba(76, 175, 80, 0.05);
+            transform: translateY(-2px);
+        }
+        .upload-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+        .upload-icon {
+            font-size: 3rem;
+            opacity: 0.7;
+        }
+        .upload-text {
+            color: #ffffff;
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin: 0;
+        }
+        .upload-hint {
+            color: #b0b0b0;
+            font-size: 0.9rem;
+            margin: 0;
+        }
+        .image-preview {
+            position: relative;
+            border-radius: 15px;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+        }
+        .image-preview img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            display: block;
+        }
+        .image-actions {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 10px;
+        }
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        .btn-primary {
+            background: #4CAF50;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #45a049;
+        }
+        .btn-secondary {
+            background: #f44336;
+            color: white;
+        }
+        .btn-secondary:hover {
+            background: #da190b;
+        }
+        .error-message {
+            background: rgba(244, 67, 54, 0.1);
+            border: 1px solid #f44336;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 15px;
+            color: #f44336;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 15px;
+            z-index: 10;
+        }
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid #4CAF50;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .loading-overlay p {
+            color: #ffffff;
+            margin: 0;
+            font-size: 1rem;
+        }
+        .image-options {
+            text-align: center;
+        }
+        .image-options .btn {
+            margin: 0;
+        }
+        #fileInput {
+            display: none;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Тест ImageUploader</h1>
+        <p>Эта страница тестирует функциональность загрузки изображений</p>
+        
+        <div id="uploadArea" class="upload-area">
+            <div class="upload-content">
+                <div class="upload-icon">📁</div>
+                <p class="upload-text">Кликните для выбора файла или перетащите изображение сюда</p>
+                <p class="upload-hint">Поддерживаются форматы: JPG, PNG, WebP</p>
+            </div>
+        </div>
+        
+        <input type="file" id="fileInput" accept="image/*">
+        
+        <div id="imagePreview" class="image-preview" style="display: none;">
+            <img id="previewImage" src="" alt="Предварительный просмотр">
+            <div class="image-actions">
+                <button class="btn btn-secondary" id="removeBtn">Удалить</button>
+            </div>
+        </div>
+        
+        <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+            <div class="loading-spinner"></div>
+            <p>Загрузка изображения...</p>
+        </div>
+        
+        <div id="errorMessage" class="error-message" style="display: none;"></div>
+        
+        <div class="image-options">
+            <button class="btn btn-secondary" id="useDefaultBtn" disabled>Использовать стандартное изображение</button>
+        </div>
+        
+        <div class="status">
+            <h3>Статус:</h3>
+            <p id="statusText">Готов к загрузке изображения</p>
+        </div>
+    </div>
+
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const imagePreview = document.getElementById('imagePreview');
+        const previewImage = document.getElementById('previewImage');
+        const removeBtn = document.getElementById('removeBtn');
+        const useDefaultBtn = document.getElementById('useDefaultBtn');
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const errorMessage = document.getElementById('errorMessage');
+        const statusText = document.getElementById('statusText');
+        
+        let selectedImage = null;
+        let previewUrl = null;
+        
+        // Обработчик клика по области загрузки
+        uploadArea.addEventListener('click', () => {
+            fileInput.click();
+        });
+        
+        // Обработчик выбора файла
+        fileInput.addEventListener('change', handleFileSelect);
+        
+        // Обработчик drag & drop
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#4CAF50';
+        });
+        
+        uploadArea.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+        
+        // Обработчик кнопки удаления
+        removeBtn.addEventListener('click', handleRemoveImage);
+        
+        // Обработчик кнопки использования стандартного изображения
+        useDefaultBtn.addEventListener('click', handleUseDefault);
+        
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                handleFile(file);
+            }
+        }
+        
+        function handleFile(file) {
+            if (!file.type.startsWith('image/')) {
+                showError('Выбранный файл не является изображением');
+                return;
+            }
+            
+            showLoading(true);
+            hideError();
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const image = new Image();
+                image.onload = () => {
+                    // Создаем canvas для обрезки в квадрат
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    const size = Math.min(image.width, image.height);
+                    
+                    canvas.width = size;
+                    canvas.height = size;
+                    
+                    // Обрезаем изображение в квадрат
+                    const offsetX = (image.width - size) / 2;
+                    const offsetY = (image.height - size) / 2;
+                    ctx.drawImage(image, offsetX, offsetY, size, size, 0, 0, size, size);
+                    
+                    // Создаем предварительный просмотр
+                    const previewCanvas = document.createElement('canvas');
+                    const previewCtx = previewCanvas.getContext('2d');
+                    previewCanvas.width = 200;
+                    previewCanvas.height = 200;
+                    previewCtx.drawImage(canvas, 0, 0, 200, 200);
+                    
+                    previewUrl = previewCanvas.toDataURL();
+                    selectedImage = canvas.toDataURL();
+                    
+                    showImagePreview();
+                    showLoading(false);
+                    updateStatus('Изображение загружено успешно');
+                };
+                image.src = e.target.result;
+            };
+            
+            reader.onerror = () => {
+                showError('Ошибка чтения файла');
+                showLoading(false);
+            };
+        }
+        
+        function showImagePreview() {
+            previewImage.src = previewUrl;
+            imagePreview.style.display = 'block';
+            uploadArea.style.display = 'none';
+            useDefaultBtn.disabled = false;
+        }
+        
+        function handleRemoveImage() {
+            selectedImage = null;
+            previewUrl = null;
+            imagePreview.style.display = 'none';
+            uploadArea.style.display = 'block';
+            useDefaultBtn.disabled = true;
+            fileInput.value = '';
+            updateStatus('Изображение удалено');
+        }
+        
+        function handleUseDefault() {
+            selectedImage = null;
+            previewUrl = null;
+            imagePreview.style.display = 'none';
+            uploadArea.style.display = 'block';
+            useDefaultBtn.disabled = true;
+            fileInput.value = '';
+            updateStatus('Выбрано стандартное изображение');
+        }
+        
+        function showLoading(show) {
+            loadingOverlay.style.display = show ? 'flex' : 'none';
+        }
+        
+        function showError(message) {
+            errorMessage.textContent = `⚠️ ${message}`;
+            errorMessage.style.display = 'block';
+        }
+        
+        function hideError() {
+            errorMessage.style.display = 'none';
+        }
+        
+        function updateStatus(text) {
+            statusText.textContent = text;
+        }
+        
+        // Проверяем доступность Django сервера
+        window.addEventListener('load', async () => {
+            try {
+                const response = await fetch('http://localhost:8000/accounts/api/upload-image/', {
+                    method: 'OPTIONS',
+                    credentials: 'include'
+                });
+                updateStatus('Django сервер доступен');
+            } catch (error) {
+                updateStatus('Django сервер недоступен: ' + error.message);
+            }
+        });
+    </script>
+</body>
+</html>

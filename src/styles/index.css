@@ -15,6 +15,21 @@ body {
   min-height: 100vh;
 }
 
+/* CSS переменные по умолчанию */
+:root {
+  --bg-primary: #121212;
+  --bg-secondary: #1a1a1a;
+  --bg-gradient: linear-gradient(135deg, #121212 0%, #1a1a1a 100%);
+  --text-primary: #ffffff;
+  --text-secondary: #b0b0b0;
+  --accent-color: #4a9eff;
+  --accent-color-rgb: 74, 158, 255;
+  --border-color: rgba(255, 255, 255, 0.1);
+  --shadow-color: rgba(0, 0, 0, 0.3);
+  --sidebar-bg: rgba(26, 26, 26, 0.8);
+  --sidebar-border: rgba(74, 158, 255, 0.3);
+}
+
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;

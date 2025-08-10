@@ -4,15 +4,18 @@ export const splitImageIntoTiles = (image, size) => {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     
-    // Устанавливаем размер canvas равным размеру изображения
-    canvas.width = image.width;
-    canvas.height = image.height;
+    // Определяем оптимальный размер для плиток
+    // Используем размер, который будет хорошо масштабироваться
+    const optimalSize = Math.min(400, Math.max(200, Math.min(image.width, image.height)));
+    const tileSize = optimalSize / size;
     
-    // Рисуем изображение на canvas
-    ctx.drawImage(image, 0, 0);
+    // Устанавливаем размер canvas
+    canvas.width = optimalSize;
+    canvas.height = optimalSize;
     
-    const tileWidth = image.width / size;
-    const tileHeight = image.height / size;
+    // Рисуем изображение на canvas с оптимальным размером
+    ctx.drawImage(image, 0, 0, optimalSize, optimalSize);
+    
     const tiles = [];
     
     // Разрезаем изображение на плитки
@@ -21,20 +24,20 @@ export const splitImageIntoTiles = (image, size) => {
         const tileCanvas = document.createElement('canvas');
         const tileCtx = tileCanvas.getContext('2d');
         
-        tileCanvas.width = tileWidth;
-        tileCanvas.height = tileHeight;
+        tileCanvas.width = tileSize;
+        tileCanvas.height = tileSize;
         
         // Вырезаем часть изображения
         tileCtx.drawImage(
           canvas,
-          col * tileWidth,
-          row * tileHeight,
-          tileWidth,
-          tileHeight,
+          col * tileSize,
+          row * tileSize,
+          tileSize,
+          tileSize,
           0,
           0,
-          tileWidth,
-          tileHeight
+          tileSize,
+          tileSize
         );
         
         tiles.push(tileCanvas.toDataURL());

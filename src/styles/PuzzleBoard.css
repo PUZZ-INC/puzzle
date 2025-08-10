@@ -4,6 +4,9 @@
   justify-content: center;
   align-items: center;
   margin: 20px 0;
+  width: 100%;
+  height: auto;
+  min-height: 300px;
 }
 
 .puzzle-board {
@@ -15,9 +18,12 @@
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  max-width: 500px;
+  max-width: min(600px, 95vw);
+  max-height: min(600px, 80vh);
   width: 100%;
-  aspect-ratio: 1;
+  height: auto;
+  min-width: 600px;
+  min-height: 600px;
 }
 
 .puzzle-tile {
@@ -35,6 +41,9 @@
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   position: relative;
   overflow: hidden;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .puzzle-tile:hover {
@@ -180,7 +189,15 @@
   .puzzle-board {
     gap: 3px;
     padding: 6px;
-    max-width: 400px;
+    max-width: min(500px, 90vw);
+    max-height: min(500px, 75vh);
+    min-width: 250px;
+    min-height: 250px;
+  }
+  
+  .puzzle-board-container {
+    min-height: 200px;
+    margin: 15px 0;
   }
   
   .puzzle-tile {
@@ -209,7 +226,15 @@
   .puzzle-board {
     gap: 2px;
     padding: 4px;
-    max-width: 300px;
+    max-width: min(400px, 85vw);
+    max-height: min(400px, 70vh);
+    min-width: 220px;
+    min-height: 220px;
+  }
+  
+  .puzzle-board-container {
+    min-height: 180px;
+    margin: 12px 0;
   }
   
   .puzzle-tile {
@@ -231,5 +256,55 @@
   
   .empty-icon {
     font-size: 1.2rem;
+  }
+}
+
+/* Дополнительные стили для очень маленьких экранов */
+@media (max-width: 360px) {
+  .puzzle-board {
+    gap: 1px;
+    padding: 3px;
+    max-width: min(300px, 80vw);
+    max-height: min(300px, 65vh);
+    min-width: 180px;
+    min-height: 180px;
+  }
+  
+  .puzzle-board-container {
+    min-height: 200px;
+    margin: 10px 0;
+  }
+  
+  .puzzle-tile {
+    border-radius: 3px;
+    font-size: 0.8rem;
+  }
+  
+  .tile-number {
+    font-size: 1rem;
+  }
+  
+  .completion-icon {
+    font-size: 1.5rem;
+  }
+  
+  .completion-content p {
+    font-size: 0.8rem;
+  }
+  
+  .empty-icon {
+    font-size: 1rem;
+  }
+}
+
+/* Стили для ландшафтной ориентации на мобильных */
+@media (max-width: 768px) and (orientation: landscape) {
+  .puzzle-board {
+    max-height: min(450px, 85vh);
+    max-width: min(450px, 85vw);
+  }
+  
+  .puzzle-board-container {
+    min-height: 300px;
   }
 } 

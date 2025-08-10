@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Аналитика - ClickHouse Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+        
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            margin: 0;
+            padding: 0;
+        }
+        
+        .container {
+            width: 100vw;
+            min-height: 100vh;
+            background: #121826;
+            overflow-x: hidden;
+            position: relative;
+            padding: 80px 20px 20px 20px;
+        }
+        
+        .top-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            z-index: 1000;
+            background: rgba(18, 24, 38, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 15px 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .top-bar:hover {
+            background: rgba(18, 24, 38, 0.98);
+            border-bottom-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.4);
+        }
+        
+        /* Стили для левой части хедера */
+        .header-left {
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #e0e0ff;
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+        
+        .logo i {
+            font-size: 1.5rem;
+            color: #667eea;
+            filter: drop-shadow(0 2px 4px rgba(102, 126, 234, 0.3));
+        }
+        
+        .logo-text {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Стили для ссылки логотипа */
+        .logo-link {
+            text-decoration: none;
+            color: inherit;
+            transition: all 0.3s ease;
+        }
+        
+        .logo-link:hover {
+            transform: scale(1.05);
+        }
+        
+        .logo-link:hover .logo i {
+            color: #8b9df6;
+            filter: drop-shadow(0 4px 8px rgba(139, 157, 246, 0.5));
+        }
+        
+        .logo-link:hover .logo-text {
+            background: linear-gradient(135deg, #8b9df6, #9b6bb8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        /* Стили для правой части хедера */
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .top-btn {
+            padding: 12px 20px;
+            border: none;
+            color: white;
+            font-size: 0.9rem;
+            font-weight: 400;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .top-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+            text-decoration: none;
+            color: white;
+        }
+        
+        .user-card {
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(231, 7, 7, 0);  /* задний фон внутри рамки пользователя*/
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0); /* делает рамку у пользователя*/
+            border-radius: 50px;
+            padding: 8px 16px 8px 8px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .user-card:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+        
+        .user-card.active {
+            background: rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+        
+        .dropdown-arrow {
+            margin-left: 8px;
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.7);
+            transition: transform 0.3s ease;
+        }
+        
+        .user-card.active .dropdown-arrow {
+            transform: rotate(180deg);
+        }
+        
+        .top-avatar-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(40, 167, 69, 0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid rgba(40, 167, 69, 0.5);
+        }
+        
+        .top-avatar-icon i {
+            font-size: 1.2rem;
+            color: rgba(40, 167, 69, 0.9);
+        }
+        
+        .top-avatar-img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        .top-user-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        
+        .top-user-name {
+            color: #e0e0ff;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        .top-user-status {
+            background: rgba(40, 167, 69, 0.3);
+            color: #20c997;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            border: 1px solid rgba(40, 167, 69, 0.4);
+            text-align: center;
+        }
+        
+        .user-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 8px;
+            background: rgba(30, 40, 60, 0.95);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(80, 102, 144, 0.3);
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+            min-width: 200px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            z-index: 1001;
+        }
+        
+        .user-dropdown.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        .user-dropdown::before {
+            content: '';
+            position: absolute;
+            top: -8px;
+            right: 20px;
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-bottom: 8px solid rgba(30, 40, 60, 0.95);
+        }
+        
+        .dropdown-header {
+            padding: 16px 20px 12px;
+            border-bottom: 1px solid rgba(80, 102, 144, 0.2);
+        }
+        
+        .dropdown-user-name {
+            color: #e0e0ff;
+            font-size: 1rem;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+        
+        .dropdown-user-email {
+            color: #8892b0;
+            font-size: 0.85rem;
+        }
+        
+        .dropdown-menu {
+            padding: 8px 0;
+        }
+        
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 20px;
+            color: #e0e0ff;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+        }
+        
+        .dropdown-item:hover {
+            background: rgba(80, 102, 144, 0.2);
+            color: #ffffff;
+            text-decoration: none;
+        }
+        
+        .dropdown-item i {
+            width: 16px;
+            text-align: center;
+            color: #8892b0;
+        }
+        
+        .dropdown-item.logout {
+            border-top: 1px solid rgba(80, 102, 144, 0.2);
+            color: #ff6b7d;
+        }
+        
+        .dropdown-item.logout:hover {
+            background: rgba(220, 53, 69, 0.1);
+            color: #ff6b7d;
+        }
+        
+        .dropdown-item.logout i {
+            color: #ff6b7d;
+        }
+        
+        .container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(41, 128, 185, 0.1) 0%, transparent 70%);
+            transform: rotate(30deg);
+            z-index: 1;
+        }
+        
+        .pattern {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(106, 17, 203, 0.08) 0%, transparent 20%),
+                radial-gradient(circle at 80% 70%, rgba(37, 117, 252, 0.08) 0%, transparent 20%);
+            z-index: -1;
+        }
+        
+        .analytics-content {
+            position: relative;
+            z-index: 2;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .page-title {
+            color: #e0e0ff;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-align: center;
+            font-weight: 500;
+            letter-spacing: -0.5px;
+        }
+        
+        .page-subtitle {
+            color: #8892b0;
+            font-size: 1.1rem;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: rgba(30, 40, 60, 0.3);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            border: 1px solid rgba(80, 102, 144, 0.3);
+            padding: 25px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            border-color: rgba(102, 126, 234, 0.4);
+        }
+        
+        .stat-card h3 {
+            color: #e0e0ff;
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .stat-card h3 i {
+            color: #667eea;
+        }
+        
+        .stat-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .stat-list li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(80, 102, 144, 0.2);
+            color: #8892b0;
+        }
+        
+        .stat-list li:last-child {
+            border-bottom: none;
+        }
+        
+        .stat-value {
+            color: #20c997;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #28a745;
+            box-shadow: 0 0 10px rgba(40, 167, 69, 0.5);
+        }
+        
+        .status-indicator.disconnected {
+            background: #dc3545;
+            box-shadow: 0 0 10px rgba(220, 53, 69, 0.5);
+        }
+        
+        .no-data {
+            color: #6c757d;
+            font-style: italic;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .events-list {
+            max-height: 500px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+        
+        .events-list::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .events-list::-webkit-scrollbar-track {
+            background: rgba(80, 102, 144, 0.1);
+            border-radius: 3px;
+        }
+        
+        .events-list::-webkit-scrollbar-thumb {
+            background: rgba(102, 126, 234, 0.3);
+            border-radius: 3px;
+        }
+        
+        .events-list::-webkit-scrollbar-thumb:hover {
+            background: rgba(102, 126, 234, 0.5);
+        }
+        
+        .event-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 8px;
+            background: rgba(40, 50, 70, 0.3);
+            border-radius: 12px;
+            border: 1px solid rgba(80, 102, 144, 0.2);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .event-item:hover {
+            background: rgba(40, 50, 70, 0.5);
+            border-color: rgba(102, 126, 234, 0.3);
+            transform: translateX(5px);
+        }
+        
+        .event-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        .event-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 1.1rem;
+        }
+        
+        .event-icon.login {
+            background: rgba(40, 167, 69, 0.2);
+            color: #20c997;
+            border: 2px solid rgba(40, 167, 69, 0.3);
+        }
+        
+        .event-icon.logout {
+            background: rgba(255, 193, 7, 0.2);
+            color: #ffc107;
+            border: 2px solid rgba(255, 193, 7, 0.3);
+        }
+        
+        .event-icon.registration {
+            background: rgba(102, 126, 234, 0.2);
+            color: #667eea;
+            border: 2px solid rgba(102, 126, 234, 0.3);
+        }
+        
+        .event-icon.email_sent {
+            background: rgba(13, 202, 240, 0.2);
+            color: #0dcaf0;
+            border: 2px solid rgba(13, 202, 240, 0.3);
+        }
+        
+        .event-icon.email_verified {
+            background: rgba(25, 135, 84, 0.2);
+            color: #198754;
+            border: 2px solid rgba(25, 135, 84, 0.3);
+        }
+        
+        .event-icon.profile_update {
+            background: rgba(138, 43, 226, 0.2);
+            color: #9d4edd;
+            border: 2px solid rgba(138, 43, 226, 0.3);
+        }
+        
+        .event-details {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .event-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+        
+        .event-user {
+            color: #e0e0ff;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        
+        .event-type-badge {
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .event-type-badge.login {
+            background: rgba(40, 167, 69, 0.2);
+            color: #20c997;
+            border: 1px solid rgba(40, 167, 69, 0.3);
+        }
+        
+        .event-type-badge.logout {
+            background: rgba(255, 193, 7, 0.2);
+            color: #ffc107;
+            border: 1px solid rgba(255, 193, 7, 0.3);
+        }
+        
+        .event-type-badge.registration {
+            background: rgba(102, 126, 234, 0.2);
+            color: #667eea;
+            border: 1px solid rgba(102, 126, 234, 0.3);
+        }
+        
+        .event-type-badge.email_sent {
+            background: rgba(13, 202, 240, 0.2);
+            color: #0dcaf0;
+            border: 1px solid rgba(13, 202, 240, 0.3);
+        }
+        
+        .event-type-badge.email_verified {
+            background: rgba(25, 135, 84, 0.2);
+            color: #198754;
+            border: 1px solid rgba(25, 135, 84, 0.3);
+        }
+        
+        .event-type-badge.profile_update {
+            background: rgba(138, 43, 226, 0.2);
+            color: #9d4edd;
+            border: 1px solid rgba(138, 43, 226, 0.3);
+        }
+        
+        .event-description {
+            color: #8892b0;
+            font-size: 0.9rem;
+            margin-top: 2px;
+        }
+        
+        .event-changes {
+            margin-top: 8px;
+            padding: 8px 12px;
+            background: rgba(138, 43, 226, 0.1);
+            border: 1px solid rgba(138, 43, 226, 0.2);
+            border-radius: 8px;
+            font-size: 0.85rem;
+            color: #c9a9dd;
+        }
+        
+        .event-changes i {
+            color: #9d4edd;
+            margin-right: 5px;
+        }
+        
+        .event-changes strong {
+            color: #e0e0ff;
+        }
+        
+        .event-time {
+            color: #6c757d;
+            font-size: 0.85rem;
+            white-space: nowrap;
+            margin-left: 15px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .event-time i {
+            font-size: 0.8rem;
+        }
+        
+        @media (max-width: 900px) {
+            .container {
+                padding: 100px 15px 20px 15px;
+            }
+            
+            .top-bar {
+                top: 0;
+                left: 0;
+                right: 0;
+                gap: 8px;
+                padding: 10px 20px;
+            }
+            
+            .logo {
+                font-size: 1rem;
+            }
+            
+            .logo i {
+                font-size: 1.2rem;
+            }
+            
+            .header-right {
+                gap: 10px;
+            }
+            
+            .top-btn {
+                padding: 10px 16px;
+                font-size: 0.8rem;
+            }
+            
+            .user-card {
+                padding: 6px 12px 6px 6px;
+                gap: 8px;
+            }
+            
+            .top-avatar-icon {
+                width: 35px;
+                height: 35px;
+            }
+            
+            .user-dropdown {
+                min-width: 180px;
+                right: -10px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .page-title {
+                font-size: 2rem;
+            }
+            
+            .stat-card {
+                padding: 20px;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Верхняя панель с карточкой пользователя -->
+    <div class="top-bar">
+        <!-- Левая часть хедера -->
+        <div class="header-left">
+            <a href="{% url 'accounts:home' %}" class="logo-link">
+                <div class="logo">
+                    <i class="fas fa-cube"></i>
+                    <span class="logo-text">МойСервис</span>
+                </div>
+            </a>
+        </div>
+        
+        <!-- Правая часть хедера -->
+        <div class="header-right">
+            <!-- Карточка пользователя с выпадающим меню -->
+            <div class="user-card" onclick="toggleUserDropdown()">
+            <div class="top-avatar-icon">
+                {% if user.avatar %}
+                    <img src="{{ user.avatar.url }}" alt="Аватарка {{ user.username }}" class="top-avatar-img">
+                {% else %}
+                    <i class="fas fa-user"></i>
+                {% endif %}
+            </div>
+            <div class="top-user-info">
+                <div class="top-user-name">{{ user.username }}</div>
+                <!--{% if user.is_active %}
+                    <div class="top-user-status">Активен</div>
+                {% else %}
+                    <div class="top-user-status" style="background: rgba(220, 53, 69, 0.3); color: #ff6b7d; border-color: rgba(220, 53, 69, 0.4);">
+                        Заблокирован
+                    </div>
+                {% endif %}-->
+            </div>
+            <i class="fas fa-chevron-down dropdown-arrow"></i>
+            
+            <!-- Выпадающее меню -->
+            <div class="user-dropdown" id="userDropdown">
+                <div class="dropdown-header">
+                    <div class="dropdown-user-name">{{ user.username }}</div>
+                    {% if user.email %}
+                        <div class="dropdown-user-email">{{ user.email }}</div>
+                    {% else %}
+                        <div class="dropdown-user-email">Без email</div>
+                    {% endif %}
+                </div>
+                <div class="dropdown-menu">
+                    <a href="{% url 'home' %}" class="dropdown-item">
+                        <i class="fas fa-home"></i>
+                        Главная
+                    </a>
+                    <a href="{% url 'accounts:profile' %}" class="dropdown-item">
+                        <i class="fas fa-user-circle"></i>
+                        Мой профиль
+                    </a>
+                    <a href="{% url 'accounts:logout' %}" class="dropdown-item logout">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Выйти из системы
+                    </a>
+                </div>
+            </div>
+        </div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="pattern"></div>
+        
+        <div class="analytics-content">
+            <h1 class="page-title">Аналитика ClickHouse</h1>
+            <p class="page-subtitle">Статистика пользователей и активности системы</p>
+            
+            <!-- Статус подключения -->
+            <div class="stat-card" style="margin-bottom: 30px;">
+                <h3><i class="fas fa-database"></i> Подключение к ClickHouse</h3>
+                <div class="connection-status">
+                    {% if clickhouse_connected %}
+                        <div class="status-indicator"></div>
+                        <span style="color: #20c997;">Подключено к {{ clickhouse_host }}</span>
+                    {% else %}
+                        <div class="status-indicator disconnected"></div>
+                        <span style="color: #ff6b7d;">Отключено</span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="stats-grid">
+                <!-- Общая статистика пользователей -->
+                <div class="stat-card">
+                    <h3><i class="fas fa-users"></i> Общая статистика пользователей</h3>
+                    {% if user_stats %}
+                    <ul class="stat-list">
+                        <li>
+                            <span>Всего событий:</span>
+                            <span class="stat-value">{{ user_stats.total_events }}</span>
+                        </li>
+                        <li>
+                            <span>Уникальных пользователей:</span>
+                            <span class="stat-value">{{ user_stats.unique_users }}</span>
+                        </li>
+                        <li>
+                            <span>Всего регистраций:</span>
+                            <span class="stat-value">{{ user_stats.registrations }}</span>
+                        </li>
+                        <li>
+                            <span>Всего логинов:</span>
+                            <span class="stat-value">{{ user_stats.logins }}</span>
+                        </li>
+                    </ul>
+                    {% else %}
+                    <div class="no-data">Нет данных</div>
+                    {% endif %}
+                </div>
+
+                <!-- Регистрации по дням -->
+                <div class="stat-card">
+                    <h3><i class="fas fa-user-plus"></i> Регистрации по дням</h3>
+                    {% if registration_stats %}
+                    <ul class="stat-list">
+                        {% for date, count in registration_stats %}
+                        <li>
+                            <span>{{ date|date:"d.m.Y" }}:</span>
+                            <span class="stat-value">{{ count }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <div class="no-data">Нет данных о регистрациях</div>
+                    {% endif %}
+                </div>
+
+                <!-- Уникальные пользователи -->
+                <div class="stat-card">
+                    <h3><i class="fas fa-users"></i> Уникальные пользователи</h3>
+                    {% if unique_users_stats %}
+                    <ul class="stat-list">
+                        <li>
+                            <span><i class="fas fa-user"></i> По логину:</span>
+                            <span class="stat-value">{{ unique_users_stats.unique_usernames }}</span>
+                        </li>
+                        <li>
+                            <span><i class="fas fa-at"></i> По email:</span>
+                            <span class="stat-value">{{ unique_users_stats.unique_emails }}</span>
+                        </li>
+                    </ul>
+                    {% else %}
+                    <div class="no-data">Нет данных</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Последние события -->
+            <div class="stat-card">
+                <h3><i class="fas fa-history"></i> Последние события</h3>
+                {% if recent_events %}
+                <div class="events-list">
+                    {% for event in recent_events %}
+                    <div class="event-item">
+                        <!-- Иконка события -->
+                        <div class="event-icon {{ event.2 }}">
+                            {% if event.2 == 'login' %}
+                                <i class="fas fa-sign-in-alt"></i>
+                            {% elif event.2 == 'logout' %}
+                                <i class="fas fa-sign-out-alt"></i>
+                            {% elif event.2 == 'registration' %}
+                                <i class="fas fa-user-plus"></i>
+                            {% elif event.2 == 'email_sent' %}
+                                <i class="fas fa-envelope"></i>
+                            {% elif event.2 == 'email_verified' %}
+                                <i class="fas fa-check-circle"></i>
+                            {% elif event.2 == 'profile_update' %}
+                                <i class="fas fa-user-edit"></i>
+                            {% else %}
+                                <i class="fas fa-circle"></i>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Детали события -->
+                        <div class="event-details">
+                            <div class="event-header">
+                                <span class="event-user">{{ event.1 }}</span>
+                                <span class="event-type-badge {{ event.2 }}">
+                                    {% if event.2 == 'login' %}
+                                        Вход
+                                    {% elif event.2 == 'logout' %}
+                                        Выход
+                                    {% elif event.2 == 'registration' %}
+                                        Регистрация
+                                    {% elif event.2 == 'email_sent' %}
+                                        Email отправлен
+                                    {% elif event.2 == 'email_verified' %}
+                                        Email подтвержден
+                                    {% elif event.2 == 'profile_update' %}
+                                        Профиль изменен
+                                    {% else %}
+                                        {{ event.2 }}
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <div class="event-description">
+                                {% if event.2 == 'login' %}
+                                    Пользователь вошел в систему
+                                {% elif event.2 == 'logout' %}
+                                    Пользователь вышел из системы
+                                {% elif event.2 == 'registration' %}
+                                    Новый пользователь зарегистрировался
+                                {% elif event.2 == 'email_sent' %}
+                                    Отправлено письмо для подтверждения
+                                {% elif event.2 == 'email_verified' %}
+                                    Email адрес успешно подтвержден
+                                {% elif event.2 == 'profile_update' %}
+                                    Пользователь обновил данные профиля
+                                {% else %}
+                                    Системное событие
+                                {% endif %}
+                                {% if event.5 and event.2 == 'profile_update' %}
+                                    <div class="event-changes">
+                                        <i class="fas fa-edit"></i> <strong>Изменения:</strong> {{ event.5 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Время события -->
+                        <div class="event-time">
+                            <i class="fas fa-clock"></i>
+                            {{ event.4|date:"d.m.Y H:i" }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="no-data">Нет данных о событиях</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Функция для переключения выпадающего меню
+        function toggleUserDropdown() {
+            const dropdown = document.getElementById('userDropdown');
+            const userCard = document.querySelector('.user-card');
+            
+            if (dropdown.classList.contains('show')) {
+                dropdown.classList.remove('show');
+                userCard.classList.remove('active');
+            } else {
+                dropdown.classList.add('show');
+                userCard.classList.add('active');
+            }
+        }
+        
+        // Закрытие меню при клике вне его
+        document.addEventListener('click', function(event) {
+            const userCard = document.querySelector('.user-card');
+            const dropdown = document.getElementById('userDropdown');
+            
+            if (!userCard.contains(event.target)) {
+                dropdown.classList.remove('show');
+                userCard.classList.remove('active');
+            }
+        });
+        
+        // Предотвращение закрытия меню при клике на него
+        document.getElementById('userDropdown').addEventListener('click', function(event) {
+            event.stopPropagation();
+        });
+        
+        // Закрытие меню по Escape
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                const dropdown = document.getElementById('userDropdown');
+                const userCard = document.querySelector('.user-card');
+                dropdown.classList.remove('show');
+                userCard.classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>

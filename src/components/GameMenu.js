@@ -12,19 +12,26 @@ const GameMenu = ({ onStartGame, isLoading, language }) => {
   });
   const [showBestResults, setShowBestResults] = useState(false);
 
+  // Добавляем отладочную информацию
+  console.log('GameMenu render:', { settings, language, onStartGame: !!onStartGame });
+
   const handleSizeChange = (size) => {
+    console.log('handleSizeChange called with:', size);
     setSettings(prev => ({ ...prev, size: parseInt(size) }));
   };
 
   const handleDifficultyChange = (difficulty) => {
+    console.log('handleDifficultyChange called with:', difficulty);
     setSettings(prev => ({ ...prev, difficulty }));
   };
 
   const handleImageUpload = (image) => {
+    console.log('handleImageUpload called with:', image);
     setSettings(prev => ({ ...prev, customImage: image }));
   };
 
   const handleStartGame = () => {
+    console.log('handleStartGame called with settings:', settings);
     onStartGame(settings);
   };
 

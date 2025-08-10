@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+        
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            padding: 20px;
+        }
+        
+        .container {
+            display: flex;
+            width: 950px;
+            height: 650px;
+            background: #121826;
+            border-radius: 16px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(41, 128, 185, 0.1) 0%, transparent 70%);
+            transform: rotate(30deg);
+            z-index: 1;
+        }
+        
+        .left-panel {
+            flex: 1;
+            background: linear-gradient(135deg, rgba(26, 42, 68, 0.8), rgba(15, 32, 39, 0.9));
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            z-index: 2;
+            backdrop-filter: blur(4px);
+        }
+        
+        .left-panel::before {
+            content: '';
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(64, 224, 208, 0.1) 0%, transparent 70%);
+            top: -100px;
+            left: -100px;
+        }
+        
+        .left-panel::after {
+            content: '';
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(106, 17, 203, 0.15) 0%, transparent 70%);
+            bottom: -80px;
+            right: -80px;
+        }
+        
+        .logo {
+            width: 100px;
+            height: 100px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(138, 155, 255, 0.15);
+        }
+        
+        .logo i {
+            font-size: 2.8rem;
+            color: rgba(138, 155, 255, 0.8);
+        }
+        
+
+        
+        .pattern {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(106, 17, 203, 0.08) 0%, transparent 20%),
+                radial-gradient(circle at 80% 70%, rgba(37, 117, 252, 0.08) 0%, transparent 20%);
+            z-index: -1;
+        }
+        
+        .right-panel {
+            flex: 1;
+            padding: 40px 35px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .form-title {
+            color: #e0e0ff;
+            font-size: 1.8rem;
+            margin-bottom: 25px;
+            text-align: center;
+            font-weight: 500;
+            letter-spacing: -0.5px;
+        }
+        
+        .input-group {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 14px 18px 14px 48px;
+            border: none;
+            background: rgba(30, 40, 60, 0.7);
+            border-radius: 12px;
+            outline: none;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(80, 102, 144, 0.4);
+            color: #f0f0ff;
+            letter-spacing: 0.5px;
+        }
+        
+        .input-group input:focus {
+            border-color: #6a11cb;
+            background: rgba(40, 50, 80, 0.8);
+            box-shadow: 0 0 0 3px rgba(106, 17, 203, 0.25);
+        }
+        
+        .input-group input::placeholder {
+            color: #8892b0;
+        }
+        
+        .input-group i {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6a11cb;
+            font-size: 1.1rem;
+        }
+        
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 14px;
+            border: none;
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 8px;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to right, #2575fc, #6a11cb);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            z-index: -1;
+        }
+        
+        .btn:hover::before {
+            opacity: 1;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(38, 117, 252, 0.4);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn-register {
+            background: linear-gradient(to right, #28a745, #20c997);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+        }
+        
+        .btn-register::before {
+            background: linear-gradient(to right, #20c997, #28a745);
+        }
+        
+        .btn-login {
+            background: transparent;
+            color: #8a9bff;
+            border: 1.5px solid rgba(138, 155, 255, 0.4);
+            box-shadow: none;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .btn-login:hover {
+            background: rgba(138, 155, 255, 0.1);
+            box-shadow: 0 4px 12px rgba(138, 155, 255, 0.2);
+            color: #8a9bff;
+            text-decoration: none;
+        }
+        
+        .separator {
+            display: flex;
+            align-items: center;
+            margin: 20px 0;
+        }
+        
+        .separator .line {
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(138, 155, 255, 0.4), transparent);
+        }
+        
+        .separator .text {
+            padding: 0 15px;
+            color: #8892b0;
+            font-weight: 500;
+            font-size: 0.85rem;
+        }
+        
+        .error-messages {
+            background: rgba(220, 53, 69, 0.1);
+            border: 1px solid rgba(220, 53, 69, 0.3);
+            color: #ff6b7d;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 0.85rem;
+        }
+        
+        .error-messages ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .error-messages li {
+            margin-bottom: 5px;
+        }
+        
+        .error-messages li:before {
+            content: '• ';
+            color: #ff6b7d;
+            margin-right: 5px;
+        }
+        
+        .dev-info {
+            background: rgba(138, 155, 255, 0.05);
+            border: 1px solid rgba(138, 155, 255, 0.2);
+            color: #8892b0;
+            padding: 10px 14px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-size: 0.75rem;
+            text-align: center;
+        }
+        
+        @media (max-width: 1000px) {
+            .container {
+                width: 95%;
+                flex-direction: column;
+                height: auto;
+            }
+            
+            .left-panel {
+                padding: 30px 25px;
+            }
+            
+            .right-panel {
+                padding: 40px 25px;
+            }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+                                <div class="left-panel">
+                            <div class="pattern"></div>
+                            <div class="logo">
+                                <i class="fas fa-user-plus"></i>
+                            </div>
+                        </div>
+        
+        <div class="right-panel">
+            <h2 class="form-title">Регистрация</h2>
+            
+            <!-- Показываем ошибки Django -->
+            {% if errors %}
+                <div class="error-messages">
+                    <ul>
+                        {% for error in errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+            
+            <!-- Показываем сообщения Django -->
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="error-messages">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+            
+            <form method="post">
+                <!-- Защита от CSRF атак (Django требует этого) -->
+                {% csrf_token %}
+                
+                <div class="input-group">
+                    <i class="fas fa-user"></i>
+                    <input 
+                        type="text" 
+                        name="username"
+                        value="{{ username }}"
+                        placeholder="Логин (мин. 3 символа)"
+                        maxlength="150"
+                    >
+                </div>
+                
+                <div class="input-group">
+                    <i class="fas fa-envelope"></i>
+                    <input 
+                        type="email" 
+                        name="email"
+                        value="{{ email }}"
+                        placeholder="Email для подтверждения (обязательно)"
+                    >
+                </div>
+                
+                <div class="input-group">
+                    <i class="fas fa-lock"></i>
+                    <input 
+                        type="password" 
+                        name="password"
+                        placeholder="Пароль (мин. 3 символа)"
+                    >
+                </div>
+                
+                <div class="input-group">
+                    <i class="fas fa-lock"></i>
+                    <input 
+                        type="password" 
+                        name="password_confirm"
+                        placeholder="Подтвердите пароль"
+                    >
+                </div>
+                
+                <button type="submit" class="btn btn-register">Создать аккаунт</button>
+                
+                <div class="separator">
+                    <div class="line"></div>
+                    <div class="text">Уже есть аккаунт?</div>
+                    <div class="line"></div>
+                </div>
+                
+                <a href="{% url 'accounts:login' %}" class="btn btn-login">Войти в систему</a>
+            </form>
+            
+            <div class="dev-info">
+                <strong>Python валидация:</strong> проверка длины, уникальности, совпадения паролей. Пароли БЕЗ хеширования (обучение).
+            </div>
+        </div>
+    </div>
+</body>
+</html>
