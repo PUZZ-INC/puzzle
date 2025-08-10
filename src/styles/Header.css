@@ -11,6 +11,7 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 20px;
+  position: relative;
 }
 
 .header-top {
@@ -33,7 +34,7 @@
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
   position: relative;
   z-index: 99999;
 }

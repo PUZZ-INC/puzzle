@@ -55,7 +55,9 @@ export const themeStyles = {
     '--accent-color': '#4a9eff',
     '--accent-color-rgb': '74, 158, 255',
     '--border-color': 'rgba(255, 255, 255, 0.1)',
-    '--shadow-color': 'rgba(0, 0, 0, 0.3)'
+    '--shadow-color': 'rgba(0, 0, 0, 0.3)',
+    '--sidebar-bg': 'rgba(26, 26, 26, 0.8)',
+    '--sidebar-border': 'rgba(74, 158, 255, 0.3)'
   },
   [THEMES.LIGHT]: {
     '--bg-primary': '#f5f5f5',
@@ -66,7 +68,9 @@ export const themeStyles = {
     '--accent-color': '#2196f3',
     '--accent-color-rgb': '33, 150, 243',
     '--border-color': 'rgba(0, 0, 0, 0.1)',
-    '--shadow-color': 'rgba(0, 0, 0, 0.1)'
+    '--shadow-color': 'rgba(0, 0, 0, 0.1)',
+    '--sidebar-bg': 'rgba(255, 255, 255, 0.9)',
+    '--sidebar-border': 'rgba(33, 150, 243, 0.3)'
   },
   [THEMES.BLUE]: {
     '--bg-primary': '#0a1929',
@@ -77,7 +81,9 @@ export const themeStyles = {
     '--accent-color': '#4a9eff',
     '--accent-color-rgb': '74, 158, 255',
     '--border-color': 'rgba(74, 158, 255, 0.2)',
-    '--shadow-color': 'rgba(0, 0, 0, 0.4)'
+    '--shadow-color': 'rgba(0, 0, 0, 0.4)',
+    '--sidebar-bg': 'rgba(19, 47, 76, 0.8)',
+    '--sidebar-border': 'rgba(74, 158, 255, 0.4)'
   },
   [THEMES.GREEN]: {
     '--bg-primary': '#0a1f0a',
@@ -88,7 +94,9 @@ export const themeStyles = {
     '--accent-color': '#4caf50',
     '--accent-color-rgb': '76, 175, 80',
     '--border-color': 'rgba(76, 175, 80, 0.2)',
-    '--shadow-color': 'rgba(0, 0, 0, 0.4)'
+    '--shadow-color': 'rgba(0, 0, 0, 0.4)',
+    '--sidebar-bg': 'rgba(26, 61, 26, 0.8)',
+    '--sidebar-border': 'rgba(76, 175, 80, 0.4)'
   },
   [THEMES.PURPLE]: {
     '--bg-primary': '#1a0a2e',
@@ -99,7 +107,9 @@ export const themeStyles = {
     '--accent-color': '#9c27b0',
     '--accent-color-rgb': '156, 39, 176',
     '--border-color': 'rgba(156, 39, 176, 0.2)',
-    '--shadow-color': 'rgba(0, 0, 0, 0.4)'
+    '--shadow-color': 'rgba(0, 0, 0, 0.4)',
+    '--sidebar-bg': 'rgba(45, 27, 78, 0.8)',
+    '--sidebar-border': 'rgba(156, 39, 176, 0.4)'
   },
   [THEMES.SUNSET]: {
     '--bg-primary': '#2d1b1b',
@@ -110,7 +120,9 @@ export const themeStyles = {
     '--accent-color': '#ff6b35',
     '--accent-color-rgb': '255, 107, 53',
     '--border-color': 'rgba(255, 107, 53, 0.2)',
-    '--shadow-color': 'rgba(0, 0, 0, 0.4)'
+    '--shadow-color': 'rgba(0, 0, 0, 0.4)',
+    '--sidebar-bg': 'rgba(74, 44, 44, 0.8)',
+    '--sidebar-border': 'rgba(255, 107, 53, 0.4)'
   }
 };
 

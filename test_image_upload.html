@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тест загрузки изображений</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .upload-area {
+            border: 2px dashed #ccc;
+            padding: 40px;
+            text-align: center;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        .upload-area:hover {
+            border-color: #007bff;
+        }
+        .preview {
+            max-width: 300px;
+            margin: 20px 0;
+        }
+        .preview img {
+            max-width: 100%;
+            border-radius: 8px;
+        }
+        .error {
+            color: red;
+            background: #ffe6e6;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success {
+            color: green;
+            background: #e6ffe6;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+    <h1>Тест загрузки изображений для игры в пятнашки</h1>
+    
+    <div class="upload-area" id="uploadArea">
+        <p>Перетащите изображение сюда или кликните для выбора файла</p>
+        <input type="file" id="fileInput" accept="image/*" style="display: none;">
+        <button onclick="document.getElementById('fileInput').click()">Выбрать файл</button>
+    </div>
+
+    <div id="preview" class="preview" style="display: none;"></div>
+    <div id="status"></div>
+
+    <script>
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const preview = document.getElementById('preview');
+        const status = document.getElementById('status');
+
+        // Обработка выбора файла
+        fileInput.addEventListener('change', handleFileSelect);
+
+        // Drag and Drop
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#007bff';
+        });
+
+        uploadArea.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#ccc';
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.style.borderColor = '#ccc';
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        function handleFileSelect(e) {
+            const file = e.target.files[0];
+            if (file) {
+                handleFile(file);
+            }
+        }
+
+        function handleFile(file) {
+            // Проверяем тип файла
+            if (!file.type.startsWith('image/')) {
+                showStatus('Ошибка: Выбранный файл не является изображением', 'error');
+                return;
+            }
+
+            // Показываем предварительный просмотр
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                preview.innerHTML = `<img src="${e.target.result}" alt="Предварительный просмотр">`;
+                preview.style.display = 'block';
+                
+                // Загружаем на сервер
+                uploadToServer(file);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        async function uploadToServer(file) {
+            showStatus('Загружаем изображение на сервер...', 'success');
+            
+            const formData = new FormData();
+            formData.append('image', file);
+
+            try {
+                const response = await fetch('http://localhost:8000/accounts/api/upload-image/', {
+                    method: 'POST',
+                    body: formData,
+                    credentials: 'include'
+                });
+
+                if (!response.ok) {
+                    let errorMessage = 'Ошибка загрузки';
+                    try {
+                        const errorData = await response.json();
+                        errorMessage = errorData.error || errorMessage;
+                    } catch (e) {
+                        if (response.status === 401) {
+                            errorMessage = 'Необходимо войти в систему';
+                        } else if (response.status === 400) {
+                            errorMessage = 'Некорректный файл';
+                        } else if (response.status === 500) {
+                            errorMessage = 'Ошибка сервера';
+                        }
+                    }
+                    throw new Error(errorMessage);
+                }
+
+                const data = await response.json();
+                showStatus(`Изображение успешно загружено! URL: ${data.image_url}`, 'success');
+                
+                // Показываем загруженное изображение
+                preview.innerHTML = `
+                    <h3>Загруженное изображение:</h3>
+                    <img src="${data.image_url}" alt="Загруженное изображение">
+                    <p><strong>URL:</strong> ${data.image_url}</p>
+                    <p><strong>Файл:</strong> ${data.filename}</p>
+                `;
+                
+            } catch (error) {
+                showStatus(`Ошибка: ${error.message}`, 'error');
+                console.error('Ошибка загрузки:', error);
+            }
+        }
+
+        function showStatus(message, type) {
+            status.innerHTML = `<div class="${type}">${message}</div>`;
+        }
+
+        // Проверяем статус сервера при загрузке страницы
+        window.addEventListener('load', async () => {
+            try {
+                const response = await fetch('http://localhost:8000/accounts/api/upload-image/', {
+                    method: 'OPTIONS'
+                });
+                showStatus('Сервер доступен и готов к работе!', 'success');
+            } catch (error) {
+                showStatus('Сервер недоступен. Убедитесь, что Django запущен на порту 8000.', 'error');
+            }
+        });
+    </script>
+</body>
+</html>

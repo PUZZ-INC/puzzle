@@ -34,6 +34,8 @@ export const translations = {
     loadingImage: "Загрузка изображения...",
     remove: "Удалить",
     useDefault: "Использовать стандартное изображение",
+    clearStorage: "Очистить сохраненные данные",
+    autoLoadImage: "Автоматически загружать сохраненное изображение",
     
     // Игровой процесс
     gameInProgress: "Игра в процессе",
@@ -111,6 +113,8 @@ export const translations = {
     loadingImage: "Loading image...",
     remove: "Remove",
     useDefault: "Use default image",
+    clearStorage: "Clear saved data",
+    autoLoadImage: "Auto-load saved image",
     
     gameInProgress: "Game in Progress",
     time: "Time",
@@ -183,6 +187,7 @@ export const translations = {
     loadingImage: "加载图片中...",
     remove: "删除",
     useDefault: "使用默认图片",
+    clearStorage: "清除保存的数据",
     
     gameInProgress: "游戏进行中",
     time: "时间",

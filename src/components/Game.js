@@ -3,12 +3,14 @@ import '../styles/Game.css';
 import GameMenu from './GameMenu';
 import PuzzleBoard from './PuzzleBoard';
 import GameStats from './GameStats';
+import ThemeSelector from './ThemeSelector';
+import LanguageSelector from './LanguageSelector';
 import BestResults from './BestResults';
 import { createPuzzle, shufflePuzzle, isPuzzleCompleted } from '../utils/puzzleLogic';
 import { createDefaultImage, splitImageIntoTiles, saveBestResult, extractDominantColor } from '../utils/imageUtils';
 import { t } from '../utils/translations';
 
-const Game = ({ gameState, setGameState, language }) => {
+const Game = ({ gameState, setGameState, language, theme, onThemeChange, onLanguageChange }) => {
   const [puzzle, setPuzzle] = useState(null);
   const [imageTiles, setImageTiles] = useState([]);
   const [gameSettings, setGameSettings] = useState({
@@ -25,9 +27,19 @@ const Game = ({ gameState, setGameState, language }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [showBestResults, setShowBestResults] = useState(false);
   const [backgroundStyle, setBackgroundStyle] = useState({});
+  const [openDropdown, setOpenDropdown] = useState(null);
+
+  const handleDropdownOpen = (dropdownType) => {
+    if (openDropdown === dropdownType) {
+      setOpenDropdown(null);
+    } else {
+      setOpenDropdown(null);
+    }
+  };
 
   // Инициализация игры
   const initializeGame = async (settings) => {
+    console.log('Game: initializeGame called with settings:', settings);
     setIsLoading(true);
     
     try {
@@ -37,8 +49,22 @@ const Game = ({ gameState, setGameState, language }) => {
       // Загружаем или создаем изображение
       let image;
       if (settings.customImage) {
+        console.log('Game: Using custom image:', settings.customImage);
         image = settings.customImage;
+        // Если у изображения есть serverUrl, используем его для загрузки
+        if (settings.customImage.serverUrl) {
+          console.log('Game: Loading image from server URL:', settings.customImage.serverUrl);
+          const serverImage = new Image();
+          serverImage.crossOrigin = 'anonymous';
+          await new Promise((resolve, reject) => {
+            serverImage.onload = resolve;
+            serverImage.onerror = reject;
+            serverImage.src = settings.customImage.serverUrl;
+          });
+          image = serverImage;
+        }
       } else {
+        console.log('Game: Creating default image');
         image = await createDefaultImage(settings.size);
       }
       
@@ -182,12 +208,32 @@ const Game = ({ gameState, setGameState, language }) => {
   // Рендер компонентов в зависимости от состояния игры
   if (gameState === 'menu') {
     return (
-      <div className="game-container fade-in">
-        <GameMenu 
-          onStartGame={initializeGame}
-          isLoading={isLoading}
-          language={language}
-        />
+      <div className="game-layout fade-in">
+        <div className="game-sidebar">
+          <div className="sidebar-controls">
+
+            <ThemeSelector 
+              currentTheme={theme}
+              onThemeChange={onThemeChange}
+              language={language}
+              onDropdownOpen={handleDropdownOpen}
+            />
+            <LanguageSelector 
+              currentLanguage={language}
+              onLanguageChange={onLanguageChange}
+              onDropdownOpen={handleDropdownOpen}
+            />
+          </div>
+        </div>
+        
+        <div className="game-container">
+          {console.log('Game: Rendering GameMenu with onStartGame:', !!initializeGame)}
+          <GameMenu 
+            onStartGame={initializeGame}
+            isLoading={isLoading}
+            language={language}
+          />
+        </div>
       </div>
     );
   }
@@ -195,69 +241,69 @@ const Game = ({ gameState, setGameState, language }) => {
   if (gameState === 'playing' || gameState === 'completed') {
     return (
       <div className="game-container fade-in">
-        <div className="game-header">
-          <h2>{t('gameInProgress', language)}</h2>
-          <GameStats 
-            stats={gameStats}
-            onReset={resetGame}
-            size={gameSettings.size}
-            difficulty={gameSettings.difficulty}
-            language={language}
-          />
-          <div className="game-actions">
-            <button 
-              className="btn btn-secondary"
-              onClick={() => setShowBestResults(true)}
-            >
-              {t('bestResults', language)}
-            </button>
-          </div>
-        </div>
-        
-        <PuzzleBoard
-          puzzle={puzzle}
-          imageTiles={imageTiles}
-          onTileClick={handleTileClick}
-          isCompleted={gameStats.isCompleted}
-          backgroundStyle={backgroundStyle}
-          language={language}
-          gameStats={gameStats}
-        />
-        
-        <div className="game-controls">
-          <button 
-            className="btn btn-primary"
-            onClick={reshuffleGame}
-            disabled={isLoading || gameStats.isCompleted}
-          >
-            {t('reshuffle', language)}
-          </button>
-        </div>
-        
-        {gameStats.isCompleted && (
-          <div className="completion-message">
-            <h3>{t('congratulations', language)}</h3>
-            <p>{t('puzzleCompleted', language, {
-              time: Math.floor(gameStats.elapsedTime / 1000),
-              moves: gameStats.moves
-            })}</p>
-            <div className="completion-actions">
-              <button className="btn btn-primary" onClick={reshuffleGame}>
-                {t('playAgain', language)}
-              </button>
-              <button className="btn btn-secondary" onClick={resetGame}>
-                {t('mainMenu', language)}
+          <div className="game-header">
+            <h2>{t('gameInProgress', language)}</h2>
+            <GameStats 
+              stats={gameStats}
+              onReset={resetGame}
+              size={gameSettings.size}
+              difficulty={gameSettings.difficulty}
+              language={language}
+            />
+            <div className="game-actions">
+              <button 
+                className="btn btn-secondary"
+                onClick={() => setShowBestResults(true)}
+              >
+                {t('bestResults', language)}
               </button>
             </div>
           </div>
-        )}
-        
-        <BestResults 
-          isOpen={showBestResults}
-          onClose={() => setShowBestResults(false)}
-          language={language}
-        />
-      </div>
+          
+          <PuzzleBoard
+            puzzle={puzzle}
+            imageTiles={imageTiles}
+            onTileClick={handleTileClick}
+            isCompleted={gameStats.isCompleted}
+            backgroundStyle={backgroundStyle}
+            language={language}
+            gameStats={gameStats}
+          />
+          
+          <div className="game-controls">
+            <button 
+              className="btn btn-primary"
+              onClick={reshuffleGame}
+              disabled={isLoading || gameStats.isCompleted}
+            >
+              {t('reshuffle', language)}
+            </button>
+          </div>
+          
+          {gameStats.isCompleted && (
+            <div className="completion-message">
+              <h3>{t('congratulations', language)}</h3>
+              <p>{t('puzzleCompleted', language, {
+                time: Math.floor(gameStats.elapsedTime / 1000),
+                moves: gameStats.moves
+              })}</p>
+              <div className="completion-actions">
+                <button className="btn btn-primary" onClick={reshuffleGame}>
+                  {t('playAgain', language)}
+                </button>
+                <button className="btn btn-secondary" onClick={resetGame}>
+                  {t('mainMenu', language)}
+                </button>
+              </div>
+            </div>
+          )}
+          
+          <BestResults 
+            isOpen={showBestResults}
+            onClose={() => setShowBestResults(false)}
+            language={language}
+          />
+        </div>
     );
   }
 
